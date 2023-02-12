@@ -4,7 +4,6 @@ import boto3
 import datetime
 from datetime import datetime
 
-s3 = boto3.client('s3')
 dynamodb = boto3.client('dynamodb')
 
 def lambda_handler(event, context):
