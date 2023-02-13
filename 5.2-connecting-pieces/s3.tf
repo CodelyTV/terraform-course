@@ -11,6 +11,15 @@ resource "aws_s3_bucket" "example_bucket" {
   }
 }
 
+resource "aws_s3_bucket" "images_bucket" {
+  bucket = var.images_name
+
+  tags = {
+    Environment = "Dev"
+    Project     = "Codely course"
+  }
+}
+
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.example_bucket.id
   key    = "hello-world"
