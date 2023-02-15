@@ -1,6 +1,6 @@
 # infracost
 
-# Checkout the base branch of the pull request (e.g. main/master).
+## Checkout the base branch of the pull request (e.g. main/master).
 
 ```
 
@@ -10,7 +10,7 @@
   ref: '${{ github.event.pull_request.base.ref }}'
 ```
 
-# Generate Infracost JSON file as the baseline.
+## Generate Infracost JSON file as the baseline.
 
 ```
 
@@ -25,7 +25,7 @@
    --terraform-force-cli
 ```
 
-# Checkout the current PR branch so we can create a diff.
+## Checkout the current PR branch so we can create a diff.
 
 ```
 
@@ -33,7 +33,7 @@
   uses: actions/checkout@v3
 ```
 
-# Generate an Infracost diff and save it to a JSON file.
+## Generate an Infracost diff and save it to a JSON file.
 
 ```
 
@@ -47,7 +47,7 @@
   cat /tmp/report.table
 ```
 
-# Post comment
+## Post comment
 
 ```
 
