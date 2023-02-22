@@ -33,11 +33,10 @@ jobs:
 
     - name: Check out base ref
       run: |
-        git fetch --no-tags --depth=2 origin $GITHUB_REF
-
+        git fetch --no-tags --depth=2 origin main
     - name: Get working directory
       run: |
-        CODE_DIR=$(git --no-pager diff --diff-filter=d --raw --name-only origin/$GITHUB_REF origin/$GITHUB_REF~1 | egrep -E "\.tf\$|^\/test|^\/pre|^\/pro|^\/all" | grep ".*\/" -o | uniq)
+        CODE_DIR=$(git --no-pager diff --raw --name-only origin/main origin/main~1 | egrep -E "\.tf\$|^\/test|^\/pre|^\/pro|^\/all" | grep ".*\/" -o | uniq)
         echo "WORKING_DIR=$CODE_DIR" >> $GITHUB_ENV
       
     - name: Setup Terraform
@@ -50,7 +49,6 @@ jobs:
        curl -s -qL -o terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/$TG_VERSION/terragrunt_linux_amd64
        chmod +x terragrunt
        sudo mv terragrunt /bin
-
     - name: Verify Terraform version
       run: terraform --version
 

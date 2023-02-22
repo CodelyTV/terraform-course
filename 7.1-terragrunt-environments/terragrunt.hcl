@@ -16,21 +16,3 @@ remote_state {
         dynamodb_table = "codely-tf-state"
     }
 }
-
-generate "provider" {
-  path      = "provider.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<EOF
-# This file is managed by `terragrunt.hcl` file from the root folder.
-# Any changes here will be lost.
-# Default provider
-provider "aws" {
-  region = "eu-west-1"
-}
-
-provider "aws" {
-  alias  = "mango-test-virginia"
-  region = "us-east-1"
-}
-EOF
-}

@@ -1,1 +1,0 @@
-dynamodb_name = "catalog"
