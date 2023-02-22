@@ -43,12 +43,12 @@ Each folder corresponds to one of the course lessons / videos:
 
 ## GitHub actions - Workflows
 
-![workflows](./screenshots/workflows.PNG)
+![workflows](./screenshots/workflows.png)
 
 ## Screenshots
 
-![plan](./screenshots/plan.PNG)
+![plan](./screenshots/plan.png)
 
 ![tfsec](./screenshots/tfsec.png)
 
-![infracost](./screenshots/infracost.PNG)
+![infracost](./screenshots/infracost.png)
