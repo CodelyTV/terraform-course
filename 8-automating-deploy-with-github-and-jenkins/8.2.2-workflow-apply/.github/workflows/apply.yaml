@@ -1,0 +1,65 @@
+name: 'Apply'
+
+on:
+  push:
+    branches:
+    - 'main'
+
+permissions:
+  contents: read
+env:
+  TG_VERSION: v0.38.6
+  TF_VERSION: 1.2.5
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Check out base ref
+      run: |
+        git fetch --no-tags --depth=2 origin main
+    - name: Get working directory
+      run: |
+        CODE_DIR=$(git --no-pager diff --raw --name-only origin/main origin/main~1 | egrep -E "\.tf\$|^\/test|^\/pre|^\/pro|^\/all" | grep ".*\/" -o | uniq)
+        echo "WORKING_DIR=$CODE_DIR" >> $GITHUB_ENV
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2.0.3
+      with:
+        terraform_version: $TF_VERSION
+
+    - name: Install Terragrunt
+      run: |
+       curl -s -qL -o terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/$TG_VERSION/terragrunt_linux_amd64
+       chmod +x terragrunt
+       sudo mv terragrunt /bin
+    - name: Verify Terraform version
+      run: terraform --version
+
+    - name: Verify Terragrunt version
+      run: terragrunt --version
+      
+    - name: Terragrunt init
+      run: terragrunt init -input=false -reconfigure --terragrunt-working-dir ${{ env.WORKING_DIR }}
+      
+    - name: Terragrunt plan
+      run: terragrunt plan --terragrunt-working-dir ${{ env.WORKING_DIR }}
+
+    - name: Terraform apply
+      run: terragrunt apply -auto-approve -input=false --terragrunt-working-dir ${{ env.WORKING_DIR }}

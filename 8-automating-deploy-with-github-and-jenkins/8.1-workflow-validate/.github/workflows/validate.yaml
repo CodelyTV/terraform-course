@@ -1,0 +1,105 @@
+name: 'Validate'
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions: write-all
+
+env:
+  TG_VERSION: v0.38.6
+  TF_VERSION: 1.2.5
+  TFSEC_VERSION: v1.5.0
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  terraform:
+    name: 'Terraform Validate'
+    runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Check out base ref
+      run: |
+        git fetch --no-tags --depth=1 origin $GITHUB_BASE_REF
+        git fetch --no-tags --depth=1 origin $GITHUB_HEAD_REF
+
+    - name: Get working directory
+      run: |
+        CODE_DIR=$(git --no-pager diff --diff-filter=d --raw --name-only origin/$GITHUB_BASE_REF origin/$GITHUB_HEAD_REF | egrep -E "\.tf\$|^\/test|^\/pre|^\/pro|^\/all" | grep ".*\/" -o | uniq)
+        echo "WORKING_DIR=$CODE_DIR" >> $GITHUB_ENV
+
+    # Setup
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2.0.3
+      with:
+        terraform_version: $TF_VERSION
+
+    - name: Install Terragrunt
+      run: |
+       curl -s -qL -o terragrunt https://github.com/gruntwork-io/terragrunt/releases/download/$TG_VERSION/terragrunt_linux_amd64
+       chmod +x terragrunt
+       sudo mv terragrunt /bin
+      
+    - name: Install tfsec
+      run: |
+       wget -q -O tfsec https://github.com/aquasecurity/tfsec/releases/download/$TFSEC_VERSION/tfsec-linux-amd64
+       chmod +x ./tfsec
+       mv ./tfsec /usr/local/bin/tfsec
+
+    - name: Verify Terragrunt version
+      run: terragrunt --version
+      
+    - name: Verify Terraform version
+      run: terraform --version
+      
+    - name: Verify awscli version
+      run: aws --version
+
+    - name: tfsec report
+      run: |
+         tfsec ${{ env.WORKING_DIR }} --format junit --out tfsec-junit.xml
+      shell: bash
+      continue-on-error: true
+
+    - name: Terragrunt Format
+      id: fmt
+      run: |
+        terragrunt fmt -check -recursive --terragrunt-working-dir ${{ env.WORKING_DIR }} -diff
+      continue-on-error: false
+
+    - name: Terragrunt Validate
+      id: validate
+      run: terragrunt validate --terragrunt-working-dir ${{ env.WORKING_DIR }} 
+      continue-on-error: true
+
+    - name: Post Validate
+      if: always() && github.ref != 'refs/heads/master' && (steps.validate.outcome == 'success' || steps.validate.outcome == 'failure')
+      uses: robburger/terraform-pr-commenter@v1
+      with:
+        commenter_type: validate
+        commenter_input: ${{ format('{0}{1}', steps.validate.outputs.stdout, steps.validate.outputs.stderr) }}
+        commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+
+    - name: Post TfSec Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()    
+      with:
+        fail-on-error: false
+        name: TfSec Tests            # Name of the check run which will be created
+        path: tfsec-junit.xml        # Path to test results
+        reporter: java-junit         # Format of test results
