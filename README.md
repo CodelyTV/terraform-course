@@ -5,10 +5,12 @@
 </p>
 
 <h1 align="center">
-  🐘🎯 Terraform CICD - terragrunt - tfsec - infracost
+  🪐 Terraform CI/CD - terragrunt - tfsec - infracost
 </h1>
 
-This repository contains a basic Terraform CICD. Designed to store all the IaC code on a mono-repo with high tfstate granularity. Supports multi-account and regions.
+This repository contains a basic Terraform CI/CD. Designed to store all the IaC code on a mono-repo with high tfstate granularity. Supports multi-account and regions.
+
+Here you have the course explaining all the examples available in this repository: [Terraform: Buenas prácticas llevando tu infraestructura a código](https://pro.codely.com/library/terraform-buenas-practicas-llevando-tu-infraestructura-a-codigo-193451/479241/about/) (Spanish)
 
 ### Requirements
 
