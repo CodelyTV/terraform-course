@@ -65,7 +65,6 @@ Each folder correspond to one of [the course videos](https://pro.codely.com/libr
 - Terragrunt v0.38.0+
 - Tfenv
 - AWS account (free tier)
-- 
 ## GitHub actions - Workflows
 
 ![workflows](./screenshots/workflows.png)
